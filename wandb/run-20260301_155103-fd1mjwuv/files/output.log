@@ -1,0 +1,34 @@
+[API] Configured to use Dedicated Hugging Face Endpoint: https://x0ymdma0fdt3ttkz.us-east4.gcp.endpoints.huggingface.cloud
+
+--- Interactive Query Router Started ---
+RL Feedback Loop & Precision ROI Active.
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Mistral API] Calling model: ministral-3b-latest...
+Routed to: Tier 1 (ministral-3b-latest)
+
+[Mistral Response]:
+As of **June 2024**, the **President of India** is **Droupadi Murmu**.
+
+She was sworn in on **July 25, 2022**, succeeding **Ram Nath Kovind**.
+
+Would you like details on her role, powers, or recent activities?
+
+   ✅ Turn Cost: $0.000008 | Baseline: $0.000131 | Savings: $0.000123
+📝 Feedback #7 recorded: Tier 1 → 2 (✗ corrected)
+Recorded turn 1: ministral-3b-latest (75 tokens, cost: $0.000008)
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Mistral API] Calling model: ministral-3b-latest...
+Routed to: Tier 1 (ministral-3b-latest)
+
+[Mistral Response]:
+The **Sabarimala Temple** in Kerala is associated with the **Ayyappa Temple**, and the **main deity worshipped there is Lord Ayyappa**.
+
+The **Sabarimala Temple** is a significant **Sivaite** (Shiva) temple, but the primary deity is **Lord Ayyappa**, who is considered a form of **Shiva** and **Vishnu**.
+
+The temple is famous for its **monastic traditions**, **pilgrimage rituals**, and the **Sabarimala Yatra** (temple entry festival).
+
+Would you like more details on the temple or its rituals?
+
+   ✅ Turn Cost: $0.000022 | Baseline: $0.000293 | Savings: $0.000271
+📝 Feedback #8 recorded: Tier 1 → 3 (✗ corrected)
+Recorded turn 2: ministral-3b-latest (217 tokens, cost: $0.000022)

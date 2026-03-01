@@ -1,0 +1,44 @@
+_wandb:
+    value:
+        cli_version: 0.25.0
+        e:
+            9x3byjo3iungnfc5ef1jwrslcq6d0s9m:
+                codePath: web\backend\app.py
+                codePathLocal: web\backend\app.py
+                cpu_count: 6
+                cpu_count_logical: 12
+                disk:
+                    /:
+                        total: "510627483648"
+                        used: "357710487552"
+                email: tanishqsharma1.ts@gmail.com
+                executable: C:\Users\tanis\AppData\Local\Programs\Python\Python312\python.exe
+                host: Tan_ishq
+                memory:
+                    total: "16535863296"
+                os: Windows-11-10.0.26200-SP0
+                program: C:\Users\tanis\Hackathon Mistral\router\adaptive-query-router-agent\web\backend\app.py
+                python: CPython 3.12.8
+                root: C:\Users\tanis\Hackathon Mistral\router\adaptive-query-router-agent
+                startedAt: "2026-03-01T14:37:27.079102Z"
+                writerId: 9x3byjo3iungnfc5ef1jwrslcq6d0s9m
+        m: []
+        python_version: 3.12.8
+        t:
+            "1":
+                - 105
+            "2":
+                - 105
+            "3":
+                - 13
+                - 16
+            "4": 3.12.8
+            "5": 0.25.0
+            "8":
+                - 3
+            "12": 0.25.0
+            "13": windows-amd64
+mode:
+    value: web_dashboard
+routing_strategy:
+    value: SFT-Router

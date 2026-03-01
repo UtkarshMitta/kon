@@ -1,0 +1,1 @@
+{"columns": ["timestamp", "query", "predicted_tier", "corrected_tier", "confidence", "status"], "data": [["2026-03-01T09:41:07.498780", "hey", 1, 1, 0.99, "web_inference"], ["2026-03-01T09:41:45.599282", "what is the sq rt of 256?", 1, 1, 0.99, "web_inference"]]}

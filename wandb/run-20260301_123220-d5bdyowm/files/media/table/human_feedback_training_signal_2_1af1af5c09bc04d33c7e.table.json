@@ -1,0 +1,1 @@
+{"columns": ["timestamp", "query", "predicted_tier", "corrected_tier", "confidence", "status"], "data": [["2026-03-01T12:41:01.091140", "Hello there", 1, 1, 0.99, "confirmed"], ["2026-03-01T12:43:14.605847", "I am planning to make a rc airplaine in my garage, how should i build it?", 3, 3, 0.99, "confirmed"]]}

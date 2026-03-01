@@ -1,0 +1,1 @@
+{"columns": ["timestamp", "query", "predicted_tier", "corrected_tier", "confidence", "status"], "data": [["2026-03-01T15:51:35.940989", "What is the name of president of india?", 1, 2, 0.99, "corrected"]]}

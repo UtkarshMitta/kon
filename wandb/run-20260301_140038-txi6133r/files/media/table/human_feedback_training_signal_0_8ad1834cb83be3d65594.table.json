@@ -1,0 +1,1 @@
+{"columns": ["timestamp", "query", "predicted_tier", "corrected_tier", "confidence", "status"], "data": [["2026-03-01T14:01:46.677359", "hello mistral", 1, 2, 0.99, "corrected"]]}

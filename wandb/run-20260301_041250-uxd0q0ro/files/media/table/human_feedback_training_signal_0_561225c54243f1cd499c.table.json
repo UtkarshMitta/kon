@@ -1,0 +1,1 @@
+{"columns": ["timestamp", "query", "predicted_tier", "corrected_tier", "confidence", "status"], "data": [["2026-03-01T04:29:14.713130", "what is the main issue people face when they have dementia", 2, 2, 0.99, "confirmed"]]}

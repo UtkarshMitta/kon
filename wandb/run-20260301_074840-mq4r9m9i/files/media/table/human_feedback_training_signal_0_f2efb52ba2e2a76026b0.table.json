@@ -1,0 +1,1 @@
+{"columns": ["timestamp", "query", "predicted_tier", "corrected_tier", "confidence", "status"], "data": [["2026-03-01T07:50:53.893448", "what is the cost of making a car from scratch in your garage?", 1, 1, 0.99, "skipped"]]}

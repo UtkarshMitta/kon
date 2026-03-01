@@ -1,0 +1,12 @@
+{"time":"2026-03-01T14:00:41.3061768-05:00","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-03-01T14:00:41.6246483-05:00","level":"INFO","msg":"stream: created new stream","id":"txi6133r"}
+{"time":"2026-03-01T14:00:41.6251865-05:00","level":"INFO","msg":"handler: started","stream_id":"txi6133r"}
+{"time":"2026-03-01T14:00:41.6279968-05:00","level":"INFO","msg":"sender: started","stream_id":"txi6133r"}
+{"time":"2026-03-01T14:00:41.6279968-05:00","level":"INFO","msg":"writer: started","stream_id":"txi6133r"}
+{"time":"2026-03-01T14:00:41.6279968-05:00","level":"INFO","msg":"stream: started","id":"txi6133r"}
+{"time":"2026-03-01T14:02:12.2400008-05:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-01T14:02:12.4657092-05:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-03-01T14:02:12.5026319-05:00","level":"INFO","msg":"stream: closing","id":"txi6133r"}
+{"time":"2026-03-01T14:02:12.5026319-05:00","level":"INFO","msg":"handler: closed","stream_id":"txi6133r"}
+{"time":"2026-03-01T14:02:12.5043866-05:00","level":"INFO","msg":"sender: closed","stream_id":"txi6133r"}
+{"time":"2026-03-01T14:02:12.5043866-05:00","level":"INFO","msg":"stream: closed","id":"txi6133r"}

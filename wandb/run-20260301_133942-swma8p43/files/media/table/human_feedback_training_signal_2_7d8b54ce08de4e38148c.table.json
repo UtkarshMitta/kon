@@ -1,0 +1,1 @@
+{"columns": ["timestamp", "query", "predicted_tier", "corrected_tier", "confidence", "status"], "data": [["2026-03-01T13:40:31.818925", "Whats up Mistral?", 1, 1, 0.99, "confirmed"], ["2026-03-01T13:41:18.317951", "who came first chicken or egg?", 1, 1, 0.99, "confirmed"]]}

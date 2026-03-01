@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\tanis\Hackathon Mistral\router\adaptive-query-router-agent\main.py", line 148, in <module>
+    main()
+  File "C:\Users\tanis\Hackathon Mistral\router\adaptive-query-router-agent\main.py", line 66, in main
+    router = MistralRouter(endpoint_url=hf_endpoint, hf_token=hf_token, mistral_api_key=mistral_key)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: MistralRouter.__init__() got an unexpected keyword argument 'endpoint_url'

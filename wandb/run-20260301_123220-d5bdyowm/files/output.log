@@ -1,0 +1,202 @@
+[API] Configured to use Dedicated Hugging Face Endpoint: https://x0ymdma0fdt3ttkz.us-east4.gcp.endpoints.huggingface.cloud
+
+--- Interactive Query Router Started ---
+RL Feedback Loop & Precision ROI Active.
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Pivot] Tier shifted from 3 to 1. Compressing context...
+[Context] Generating Pivot Briefing via Ministral 3B...
+[Mistral API] Calling model: ministral-3b-latest...
+Routed to: Tier 1 (ministral-3b-latest) | Confidence: 0.99
+
+[Mistral Response]:
+Hello! How can I assist you today? If you're curious about black holes, their properties, or anything else related to astrophysics, feel free to ask!
+
+   ✅ Turn Cost: $0.000016 | Baseline: $0.000123 | Savings: $0.000107
+Recorded turn 1: ministral-3b-latest (163 tokens, cost: $0.000016)
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Pivot] Tier shifted from 1 to 3. Compressing context...
+[Context] Generating Pivot Briefing via Ministral 3B...
+[Context] Topic shift detected. Clearing context briefing.
+[Mistral API] Calling model: mistral-medium-latest...
+Routed to: Tier 3 (mistral-medium-latest) | Confidence: 0.99
+
+[Mistral Response]:
+Building an RC (Radio-Controlled) airplane in your garage is a fun and rewarding project! Below is a step-by-step guide to help you get started, covering materials, tools, design, construction, and testing.
+
+---
+
+### **1. Choose the Type of RC Airplane**
+Decide on the type of plane based on your skill level and goals:
+- **Beginner:** High-wing trainer (stable, easy to fly)
+- **Intermediate:** Low-wing sport plane (more agile)
+- **Advanced:** Aerobatic, 3D, or scale model (complex maneuvers)
+
+For your first build, a **high-wing trainer** (e.g., a **FT Simple Cub** or **FT Tiny Trainer**) is recommended.
+
+---
+
+### **2. Gather Materials & Tools**
+#### **Materials:**
+- **Airframe:**
+  - **Foam board** (e.g., Dollar Tree foam board or Depron foam) – lightweight and easy to work with.
+  - **Balsa wood or plywood** (for spars, firewalls, and reinforcements).
+  - **Carbon fiber rods** (for wing spars, optional but adds strength).
+  - **Hinges** (for control surfaces – use CA hinges or tape hinges).
+  - **Glues:** Foam-safe CA (cyanoacrylate), hot glue, or epoxy.
+  - **Covering film** (Monokote, packing tape, or laminating film for durability).
+
+- **Electronics:**
+  - **Motor:** Brushless outrunner (e.g., 2204–2212 size for small planes).
+  - **ESC (Electronic Speed Controller):** Match the motor’s current rating (e.g., 20A–30A).
+  - **Propeller:** Choose based on motor size (e.g., 8x4 or 9x6 for a 2200kv motor).
+  - **Servos:** 9g micro servos (2–4 servos for ailerons, elevator, rudder, and throttle if needed).
+  - **Receiver (Rx):** Compatible with your transmitter (e.g., FrSky, Spektrum, or FlySky).
+  - **Transmitter (Tx):** A 4+ channel radio (e.g., FlySky i6, Spektrum DX6e).
+  - **Battery:** LiPo (e.g., 3S 800mAh–1300mAh for small planes).
+  - **Battery connector:** XT60 or Deans.
+  - **UBEC (if needed):** For powering servos separately (optional for small planes).
+
+- **Miscellaneous:**
+  - **Velcro straps** (for battery mounting).
+  - **Rubber bands or zip ties** (for securing components).
+  - **Control horns & pushrods** (for linking servos to control surfaces).
+
+#### **Tools:**
+- **Cutting:** X-Acto knife, razor blades, or a hot wire cutter (for foam).
+- **Sandpaper** (for smoothing edges).
+- **Ruler & straightedge** (for precise cuts).
+- **Soldering iron & solder** (for electronics connections).
+- **Drill & small bits** (for mounting motors/servos).
+- **Needle-nose pliers & tweezers** (for small adjustments).
+- **Heat gun** (for shrinking covering film).
+- **Multimeter** (for checking connections).
+
+---
+
+### **3. Design or Choose a Plan**
+- **Option 1: Use a Free Plan**
+  - [Flite Test](https://www.flitetest.com/) offers free plans for beginner-friendly foam board planes (e.g., FT Simple Cub, FT Tiny Trainer).
+  - [RC Groups](https://www.rcgroups.com/) has many user-shared plans.
+- **Option 2: Design Your Own**
+  - Use **CAD software** (e.g., Fusion 360, SolidWorks) or **RC design tools** (e.g., Profili 2, XFLR5 for airfoils).
+  - Keep the **wing loading** low (~10–15 oz/sq ft) for stability.
+
+---
+
+### **4. Build the Airframe**
+#### **A. Cut the Parts**
+- Print the plans at **1:1 scale** and trace onto foam board.
+- Cut out **fuselage, wings, tail (horizontal & vertical stabilizers), and control surfaces** (ailerons, elevator, rudder).
+- Use a **ruler and sharp blade** for clean cuts.
+
+#### **B. Assemble the Fuselage**
+- Glue the **fuselage sides** together, reinforcing with **balsa or plywood** for the motor mount.
+- Install the **firewall** (plywood) to mount the motor securely.
+- Add **formers** (bulkheads) for strength if needed.
+
+#### **C. Build the Wings**
+- **Spar:** Insert a **carbon fiber rod or wooden spar** for strength.
+- **Dihedral:** For stability, add a slight **upward angle (2–5°)** to the wing tips.
+- **Ailerons:** Cut and hinge them (use **CA hinges or tape**).
+- **Wing mounting:** Use **rubber bands or screws** to attach to the fuselage.
+
+#### **D. Assemble the Tail**
+- Glue the **horizontal and vertical stabilizers** to the fuselage.
+- Hinge the **elevator and rudder**.
+
+#### **E. Install Control Surfaces**
+- Attach **control horns** to ailerons, elevator, and rudder.
+- Connect **pushrods** from servos to control horns (use **Z-bends** for adjustments).
+
+---
+
+### **5. Install Electronics**
+#### **A. Motor & ESC**
+- Mount the **motor** to the firewall (use screws and threadlocker).
+- Solder the **ESC to the motor** (check rotation direction; reverse two wires if needed).
+- Secure the **ESC** inside the fuselage (use double-sided tape or Velcro).
+
+#### **B. Servos**
+- Install servos for **ailerons, elevator, and rudder** (and throttle if using a gas plane).
+- Use **servo extensions** if needed for clean wiring.
+
+#### **C. Receiver & Battery**
+- Mount the **receiver** in a protected spot (e.g., under the wing or in the fuselage).
+- Place the **battery** near the **center of gravity (CG)** (check the plans for CG location).
+- Use **Velcro straps** to secure the battery.
+
+#### **D. Wiring**
+- Connect **ESC to the receiver’s throttle channel**.
+- Connect **servos to the correct channels** (aileron, elevator, rudder).
+- **Bind the receiver to the transmitter** (follow your radio’s manual).
+
+---
+
+### **6. Final Assembly & Checks**
+- **Balance the plane:** Ensure the **CG is correct** (use the plans as a guide).
+- **Check control throws:** Ailerons, elevator, and rudder should move freely (~10–15° for beginners).
+- **Range test:** Turn on the radio and walk ~30m away to ensure no signal loss.
+- **Propeller safety:** Use a **propeller saver** or ensure it’s tight (loose props can fly off!).
+
+---
+
+### **7. Maiden Flight (First Test Flight)**
+#### **Pre-Flight Checklist:**
+✅ **CG is correct** (plane balances at the recommended point).
+✅ **Controls move in the right direction** (use the radio’s "servo reverse" if needed).
+✅ **Motor spins smoothly** (no vibrations).
+✅ **Battery is fully charged**.
+✅ **No loose parts**.
+
+#### **Flying Tips for Beginners:**
+- **Launch:** Hand-launch gently (or use a bungee for larger planes).
+- **Trim:** Adjust elevator trim for level flight (small clicks at a time).
+- **Land:** Approach into the wind, flare just before touchdown.
+- **Crash prep:** Expect a few crashes—foam planes are durable!
+
+---
+
+### **8. Troubleshooting Common Issues**
+| **Problem** | **Possible Cause** | **Solution** |
+|-------------|-------------------|--------------|
+| Plane rolls left/right | Ailerons not centered | Adjust trim or servo linkage |
+| Nose dives | CG too forward | Move battery back |
+| Stalls easily | CG too rearward | Move battery forward |
+| Motor cuts out | Loose connection | Check ESC/battery wires |
+| Radio interference | Poor antenna placement | Extend antenna away from electronics |
+
+---
+
+### **9. Upgrades & Modifications (After Success)**
+- **Add flaps** for slower landings.
+- **FPV setup** (camera + video transmitter) for first-person flying.
+- **Lights** for night flying.
+- **Stronger motor/battery** for more power.
+
+---
+
+### **10. Safety Tips**
+- **Always fly in an open area** (away from people, trees, and power lines).
+- **Use a LiPo-safe bag** for charging/storing batteries.
+- **Wear safety glasses** when cutting foam or testing props.
+- **Follow local RC flying laws** (e.g., FAA Part 107 in the US for larger planes).
+
+---
+
+### **Recommended First Builds**
+| **Plane** | **Skill Level** | **Wingspan** | **Power** | **Notes** |
+|-----------|----------------|-------------|-----------|-----------|
+| FT Tiny Trainer | Beginner | 30" | 2S–3S LiPo | Very stable, easy to build |
+| FT Simple Cub | Beginner | 40" | 3S LiPo | Classic trainer |
+| FT Explorer | Intermediate | 48" | 3S–4S LiPo | Sport plane, aerobatic |
+| Balsa USA Citabria | Intermediate | 40–60" | .25–.46 glow/electric | Scale balsa kit |
+
+---
+
+### **Final Thoughts**
+Building an RC plane is a **learn-as-you-go** process. Start simple, test often, and don’t be afraid to make mistakes. The RC community (forums like [RC Groups](https://www.rcgroups.com/) or [Flite Test](https://www.flitetest.com/)) is very helpful if you get stuck.
+
+Would you like recommendations for specific electronics based on your budget? Or do you need help with a particular step (e.g., wiring, CG calculation)?
+
+   📊 Turn Cost: $0.004509 | Baseline: $0.004509 | Savings: $0.000000
+Recorded turn 2: mistral-medium-latest (2273 tokens, cost: $0.004509)

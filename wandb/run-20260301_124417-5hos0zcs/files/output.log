@@ -1,0 +1,13 @@
+[API] Configured to use Dedicated Hugging Face Endpoint: https://x0ymdma0fdt3ttkz.us-east4.gcp.endpoints.huggingface.cloud
+
+--- Interactive Query Router Started ---
+RL Feedback Loop & Precision ROI Active.
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Mistral API] Calling model: ministral-3b-latest...
+Routed to: Tier 1 (ministral-3b-latest) | Confidence: 0.99
+
+[Mistral Response]:
+Hello! 😊 I'm just a virtual assistant, so I don't have feelings, but I'm here and ready to help you with anything you need! How about you—how are *you* doing today? Anything fun, challenging, or interesting on your mind?
+
+   ✅ Turn Cost: $0.000007 | Baseline: $0.000117 | Savings: $0.000111
+Recorded turn 1: ministral-3b-latest (65 tokens, cost: $0.000007)

@@ -1,0 +1,24 @@
+{
+  "os":  "Windows-11-10.0.26200-SP0",
+  "python":  "CPython 3.12.8",
+  "startedAt":  "2026-03-01T17:32:20.931556Z",
+  "program":  "C:\\Users\\tanis\\Hackathon Mistral\\router\\adaptive-query-router-agent\\main.py",
+  "codePath":  "main.py",
+  "codePathLocal":  "main.py",
+  "email":  "tanishqsharma1.ts@gmail.com",
+  "root":  "C:\\Users\\tanis\\Hackathon Mistral\\router\\adaptive-query-router-agent",
+  "host":  "Tan_ishq",
+  "executable":  "C:\\Users\\tanis\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "cpu_count":  6,
+  "cpu_count_logical":  12,
+  "disk":  {
+    "/":  {
+      "total":  "510627483648",
+      "used":  "359007928320"
+    }
+  },
+  "memory":  {
+    "total":  "16535863296"
+  },
+  "writerId":  "zi55shtcuokrlpheukf781euf90ysgqk"
+}

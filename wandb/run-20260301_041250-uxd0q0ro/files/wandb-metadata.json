@@ -1,0 +1,28 @@
+{
+  "os":  "Windows-11-10.0.26200-SP0",
+  "python":  "CPython 3.12.8",
+  "startedAt":  "2026-03-01T09:12:50.810164Z",
+  "program":  "C:\\Users\\tanis\\Hackathon Mistral\\router\\adaptive-query-router-agent\\main.py",
+  "codePath":  "main.py",
+  "codePathLocal":  "main.py",
+  "git":  {
+    "remote":  "https://github.com/UtkarshMitta/adaptive-query-router-agent.git",
+    "commit":  "da0fa317c727582f78cffaca806ab7a020c45ce9"
+  },
+  "email":  "tanishqsharma1.ts@gmail.com",
+  "root":  "C:\\Users\\tanis\\Hackathon Mistral\\router\\adaptive-query-router-agent",
+  "host":  "Tan_ishq",
+  "executable":  "C:\\Users\\tanis\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+  "cpu_count":  6,
+  "cpu_count_logical":  12,
+  "disk":  {
+    "/":  {
+      "total":  "510627483648",
+      "used":  "356903251968"
+    }
+  },
+  "memory":  {
+    "total":  "16535863296"
+  },
+  "writerId":  "6cmjwuotin7o4ea0zwna7zs1kshnzboi"
+}

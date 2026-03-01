@@ -1,0 +1,132 @@
+[API] Configured to use Dedicated Hugging Face Endpoint: https://x0ymdma0fdt3ttkz.us-east4.gcp.endpoints.huggingface.cloud
+
+--- Interactive Query Router Started ---
+RL Feedback Loop & Precision ROI Active.
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Mistral API] Calling model: ministral-3b-latest...
+Routed to: Tier 1 (ministral-3b-latest) | Confidence: 0.99
+
+[Mistral Response]:
+Hey! 😊 How’s it going? Need a laugh, a deep fry tip, or just here to chat? Let me know—I’m happy to keep the conversation going! 🍗🔥
+
+(Or if you’re feeling *extra* silly, we could revisit the chicken joke with a new twist!)
+
+   ✅ Turn Cost: $0.000108 | Baseline: $0.000543 | Savings: $0.000435
+Recorded turn 1: ministral-3b-latest (1081 tokens, cost: $0.000108)
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Pivot] Tier shifted from 1 to 2. Compressing context...
+[Context] Generating Pivot Briefing via Ministral 3B...
+[Context] Topic shift detected. Clearing context briefing.
+[Mistral API] Calling model: mistral-small-latest...
+Routed to: Tier 2 (mistral-small-latest) | Confidence: 0.99
+
+[Mistral Response]:
+The root cause of **dandruff** is a complex interplay of factors, primarily involving an overgrowth of a yeast-like fungus called **Malassezia** (formerly known as *Pityrosporum ovale*), combined with an overactive immune response and individual scalp conditions. Here’s a breakdown of the key causes:
+
+### **1. Malassezia Yeast Overgrowth**
+   - **Malassezia** is a naturally occurring fungus on the scalp that feeds on sebum (scalp oils).
+   - In some people, it overgrows, breaking down sebum into **oleic acid**, which irritates the scalp and triggers excessive skin cell shedding (dandruff flakes).
+
+### **2. Scalp Sensitivity & Immune Response**
+   - Some individuals have a **hypersensitive scalp** that reacts strongly to Malassezia, leading to inflammation, itching, and flaking.
+   - Genetic factors may play a role in how the immune system responds to the fungus.
+
+### **3. Seborrheic Dermatitis (A Common Cause of Dandruff)**
+   - A chronic inflammatory skin condition that causes **red, greasy, flaky patches** on the scalp (and sometimes eyebrows, beard, or chest).
+   - Linked to **Malassezia overgrowth** and an overactive immune response.
+
+### **4. Dry Scalp (Less Common)**
+   - While dandruff is often associated with oily scalps, **dry skin** can also cause flaking due to lack of moisture.
+
+### **5. Other Contributing Factors**
+   - **Hormonal changes** (e.g., puberty, stress, thyroid issues)
+   - **Poor scalp hygiene** (infrequent washing can allow Malassezia to thrive)
+   - **Harsh hair products** (shampoos with sulfates, alcohol, or fragrances)
+   - **Weather changes** (cold, dry air can worsen flaking)
+   - **Skin conditions** (eczema, psoriasis, or fungal infections)
+
+### **How to Treat Dandruff?**
+- **Antifungal shampoos** (ketoconazole, selenium sulfide, pyrithione zinc, coal tar)
+- **Salicylic acid or sulfur** (to exfoliate and reduce flakes)
+- **Moisturizing scalp treatments** (if dryness is the issue)
+- **Avoiding harsh chemicals** and frequent heat styling
+- **Managing stress** (since stress can worsen dandruff)
+
+If dandruff persists despite treatment, consult a dermatologist to rule out conditions like **seborrheic dermatitis, psoriasis, or fungal infections**.
+
+   ✅ Turn Cost: $0.000170 | Baseline: $0.001130 | Savings: $0.000960
+Recorded turn 2: mistral-small-latest (576 tokens, cost: $0.000170)
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Pivot] Tier shifted from 2 to 3. Compressing context...
+[Context] Generating Pivot Briefing via Ministral 3B...
+[Mistral API] Calling model: mistral-medium-latest...
+Routed to: Tier 3 (mistral-medium-latest) | Confidence: 0.99
+
+[Mistral Response]:
+Since **pyrithione zinc** (a common antifungal/antibacterial agent) isn’t helping after **2+ weeks**, here’s what might be going on—and what to try next:
+
+### **Possible Reasons It’s Not Working:**
+1. **Resistant Yeast Strain** – *Malassezia* (the yeast causing dandruff) can sometimes resist pyrithione zinc, especially if you’ve used it long-term.
+2. **Not the Right Active Ingredient** – Your flakes might be from:
+   - **Seborrheic dermatitis** (more severe, oily flakes + redness)
+   - **Dry scalp** (small, white flakes, no oiliness)
+   - **Contact dermatitis** (reaction to hair products)
+   - **Psoriasis** (thick, silvery scales)
+3. **Application Issues** – Are you:
+   - Lathering it into the scalp (not just hair)?
+   - Leaving it on for **3–5 minutes** before rinsing?
+   - Using it **2–3x/week** (not daily)?
+
+---
+
+### **Next Steps: Switch Actives**
+Try **rotating** these **alternative antifungals/anti-inflammatories** (pick **one** at a time for 2–4 weeks):
+
+| **Active Ingredient** | **How It Works**               | **Product Examples**                     | **How to Use**                          |
+|-----------------------|--------------------------------|------------------------------------------|-----------------------------------------|
+| **Ketoconazole 1–2%** | Stronger antifungal (kills *Malassezia*) | Nizoral shampoo, Ketoconazole generic    | 2x/week, lather 3–5 mins, rinse         |
+| **Selenium Sulfide 1%** | Slows yeast growth + reduces flaking | Selsun Blue, Head & Shoulders Clinical  | 2x/week, rinse thoroughly (can discolor light hair) |
+| **Coal Tar**          | Slows skin cell turnover       | Neutrogena T/Gel, Denorex                | 2–3x/week, leave on 5 mins, rinse       |
+| **Salicylic Acid 3%** | Exfoliates flakes (but doesn’t kill yeast) | Neutrogena T/Sal, Jason Dandruff Relief | 2–3x/week, pair with antifungal         |
+| **Tea Tree Oil 5%**   | Natural antifungal/antibacterial | Paul Mitchell Tea Tree, DIY (dilute!)   | 2–3x/week, mix 5 drops with carrier oil |
+
+---
+### **Pro Tips for Stubborn Dandruff:**
+✅ **Double-Cleanse** – Use **salicylic acid shampoo** first to remove flakes, then follow with an **antifungal** (e.g., ketoconazole).
+✅ **Moisturize the Scalp** – If your scalp is dry, apply a **light, fragrance-free** oil (like **jojoba or squalane**) after washing.
+✅ **Avoid Triggers** –
+   - **Hair products** with sulfates, alcohol, or fragrances.
+   - **Heat styling** (dries out scalp).
+   - **Stress/sleep deprivation** (worsens inflammation).
+✅ **Diet Tweaks** – Reduce sugar/yeast (feeds *Malassezia*); add **omega-3s** (anti-inflammatory) and **zinc** (supports skin healing).
+
+---
+### **When to See a Dermatologist:**
+If **none of these work after 4 weeks**, or if you have:
+- **Severe redness, itching, or bleeding**
+- **Flakes spreading to face/ears** (could be seborrheic dermatitis or psoriasis)
+- **Hair loss** (rule out fungal infections like *tinea capitis*)
+
+---
+**Try this first:** Grab **Nizoral (ketoconazole 1%)**—it’s the gold standard for stubborn dandruff. Use it **2x/week for 2 weeks**, and report back! Let me know if you notice **oily flakes vs. dry flakes** or **redness**, so I can refine the advice.
+
+   📊 Turn Cost: $0.001882 | Baseline: $0.001882 | Savings: $0.000000
+Recorded turn 3: mistral-medium-latest (1040 tokens, cost: $0.001882)
+[API] Sending query to Custom LoRA Dedicated Endpoint...
+[Pivot] Tier shifted from 3 to 1. Compressing context...
+[Context] Generating Pivot Briefing via Ministral 3B...
+[Mistral API] Calling model: ministral-3b-latest...
+Routed to: Tier 1 (ministral-3b-latest) | Confidence: 0.99
+
+[Mistral Response]:
+While stress can sometimes worsen scalp conditions like dandruff by increasing inflammation or disrupting skin barrier function, it’s **not the primary cause** of persistent *Malassezia*-related dandruff in your case. Stress may exacerbate symptoms, but the root issue likely remains unresolved with your current routine.
+
+To address this, focus on:
+1. **Switching actives** (e.g., **ketoconazole shampoo** or **selenium sulfide**) for 4 weeks to target *Malassezia*.
+2. **Double-cleaning** with salicylic acid (e.g., in a clarifying shampoo) to remove buildup.
+3. **Moisturizing** (if dry scalp is a factor) with a lightweight, fragrance-free product.
+
+If symptoms don’t improve after 4 weeks, a dermatologist can help rule out other causes (e.g., fungal overgrowth, seborrheic dermatitis). Would you like help refining your shampoo routine?
+
+   ✅ Turn Cost: $0.000039 | Baseline: $0.000492 | Savings: $0.000454
+Recorded turn 4: ministral-3b-latest (387 tokens, cost: $0.000039)

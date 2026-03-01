@@ -1,0 +1,15 @@
+# Environments
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Local Test Scripts
+test_hf.py
+clone_model.py
+
+# Model Weights
+# (Add specific heavy file extensions here if needed)
+*.safetensors
+*.bin

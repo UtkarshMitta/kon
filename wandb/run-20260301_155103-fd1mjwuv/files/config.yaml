@@ -1,0 +1,49 @@
+_wandb:
+    value:
+        cli_version: 0.25.0
+        e:
+            xjsm8wuo32we3e52ixbgoe7i86aoyvxc:
+                codePath: main.py
+                codePathLocal: main.py
+                cpu_count: 6
+                cpu_count_logical: 12
+                disk:
+                    /:
+                        total: "510627483648"
+                        used: "359214014464"
+                email: tanishqsharma1.ts@gmail.com
+                executable: C:\Users\tanis\AppData\Local\Programs\Python\Python312\python.exe
+                host: Tan_ishq
+                memory:
+                    total: "16535863296"
+                os: Windows-11-10.0.26200-SP0
+                program: C:\Users\tanis\Hackathon Mistral\router\adaptive-query-router-agent\main.py
+                python: CPython 3.12.8
+                root: C:\Users\tanis\Hackathon Mistral\router\adaptive-query-router-agent
+                startedAt: "2026-03-01T20:51:03.599267Z"
+                writerId: xjsm8wuo32we3e52ixbgoe7i86aoyvxc
+        m: []
+        python_version: 3.12.8
+        t:
+            "1":
+                - 105
+            "2":
+                - 105
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.12.8
+            "5": 0.25.0
+            "8":
+                - 3
+            "12": 0.25.0
+            "13": windows-amd64
+base_model:
+    value: mistralai/Mistral-7B-Instruct-v0.3
+battle_mode:
+    value: false
+rl_feedback_enabled:
+    value: true
+routing_strategy:
+    value: SFT-Router
