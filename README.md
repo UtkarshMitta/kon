@@ -1,115 +1,418 @@
-# Mistral Query Router — Elastic Intelligence Platform
+# Mistral Query Router (kon demo)
 
-A brilliant, self-improving **Mistral Router** built for enterprise cost-efficiency. It uses a fine-tuned **Ministral 3B** model to intelligently classify and route user queries to the optimal Mistral model tier (1–4), driving up to **90%+ cost savings** without sacrificing response quality.
+This repo contains a **stand‑alone Mistral query router**, implemented in `model-router.py`.
 
-Built with **HuggingFace**, **FastAPI**, **React**, and **Weights & Biases**, featuring a continuous **DPO Reinforcement Learning** feedback loop.
-
----
-
-## 🚀 Key Features
-
-*   **Intelligent Routing:** SFT-tuned classifier dynamically routes to Ministral 3B, Mistral Small, Medium, or Large based on query complexity.
-*   **Live ROI Dashboard:** A stunning React/Vite interface showing real-time cost savings vs. a static baseline (Mistral Medium).
-*   **Elastic Context Compression:** A background summarization agent (Ministral 3B) compresses chat history into a persistent <200 token briefing, maintaining high-fidelity session memory for pennies.
-*   **Reinforcement Learning (DPO):** Granular human feedback is logged directly to **W&B Tables**, triggering Direct Preference Optimization (DPO) to continually align and improve the router.
-*   **W&B Integration:** Real-time logging of routing decisions, costs, feedback arrays, and RL training curves.
+It takes plain text prompts, chooses the appropriate Mistral model tier (1–4), maintains a
+JSONL conversation history with periodic summarization, and logs per‑query token usage and
+relative cost vs a virtual tier‑3 baseline.
 
 ---
 
-## 🧠 Model Tiers
+## 1. What `model-router.py` does
 
-| Tier | Complexity | Assigned Model | Target Use Case & Cost |
-| :--- | :--- | :--- | :--- |
-| **Tier 1** | Simple | `ministral-3b-latest` | Greetings, facts, trivial math ($0.10 / 1M) |
-| **Tier 2** | Moderate | `mistral-small-latest` | Summarization, code snippets ($0.30 / 1M) |
-| **Tier 3** | Complex | `mistral-medium-latest` | Multi-step reasoning ($2.00 / 1M) |
-| **Tier 4** | Expert | `mistral-large-latest` | Synthesis, system design ($1.50 / 1M) |
+`model-router.py` defines a single public class:
+
+- `MistralRouter` – a stateful router around the Mistral Conversations API:
+  - **Routing**:
+    - Classifies each incoming prompt into a **tier 1–4**.
+    - Maps tiers to concrete models:
+      - Tier 1 → `ministral-3b-latest`
+      - Tier 2 → `mistral-small-latest`
+      - Tier 3 → `mistral-medium-latest`
+      - Tier 4 → `mistral-large-latest`
+  - **State & history**:
+    - Appends every user/assistant exchange to `conversation_history.jsonl`.
+    - Persists lightweight router state (current model, conversation id) in `.router_state.json`.
+  - **Summarization & compaction**:
+    - After a fixed number of turns (`SUMMARY_INTERVAL`), calls a summarizer model
+      (`magistral-small-2509`) to summarize the full history.
+    - Rewrites `conversation_history.jsonl` to a single `summary` entry, then continues
+      appending new turns after that summary.
+  - **Model switching with context preservation**:
+    - On a model change, reads the compacted history and starts a new conversation on the
+      new model, prepending the summary + recent turns so context is preserved.
+  - **Cost logging**:
+    - Uses the **real token usage** returned by the Mistral API (no estimates).
+    - For each routed query and each summarization call, writes one JSON object to
+      `router_cost_log.jsonl` with:
+      - `prompt_tokens`, `completion_tokens`, `total_tokens`
+      - The **actual model tier** and cost (based on current model)
+      - A **virtual tier‑3 “baseline” cost** for the same tokens
+      - `savings_pct` – percentage savings vs that tier‑3 baseline
+
+The router itself is self‑contained; Kon’s TUI and the rest of the agent are not required
+to use it.
 
 ---
 
-## 🛠️ Tech Stack
+## 2. Basic usage
 
-*   **Models:** Mistral API (Ministral 3B up to Mistral Large), HuggingFace Endpoints
-*   **Training:** QLoRA, TRL (DPOTrainer), HuggingFace Datasets
-*   **Backend:** FastAPI, Python, Uvicorn
-*   **Frontend:** React, Vite, CSS Animations
-*   **MLOps & Observability:** Weights & Biases (W&B)
+You interact with the router directly from Python:
+
+```python
+from model_router import MistralRouter
+
+router = MistralRouter()  # uses MISTRAL_API_KEY from your environment
+
+# 1) Start a conversation (router chooses tier for you)
+result = router.route({"prompt": "Explain what a Python list comprehension is."})
+print(result["model"], result["output"])
+
+# 2) Continue the same conversation
+followup = router.route({"prompt": "Now show me a short code example."})
+print(followup["model"], followup["output"])
+
+# 3) Force a specific model tier / id if you want (optional)
+hard_routed = router.route(
+    {"prompt": "Design a small REST API for a todo app.", "model": "mistral-large-latest"}
+)
+print(hard_routed["model"], hard_routed["output"])
+
+# 4) When you’re done
+router.reset()
+```
+
+Environment:
+
+- Set `MISTRAL_API_KEY` in your shell or `.env.local` so the router can talk to Mistral.
+- The router will create / update:
+  - `conversation_history.jsonl`
+  - `.router_state.json`
+  - `router_cost_log.jsonl`
 
 ---
 
-## 🚦 Quick Start
+## 3. Inspecting routing and cost
 
-### 1. Installation 
+Because each call writes exactly one JSON object to `router_cost_log.jsonl`, you can do
+all your analysis offline, for example:
+
 ```bash
-git clone https://github.com/UtkarshMitta/kon.git
+cat router_cost_log.jsonl | jq .
+```
+
+Each line looks roughly like:
+
+```json
+{
+  "timestamp": "...",
+  "kind": "route",
+  "is_summarisation": false,
+  "model": "mistral-small-latest",
+  "decision_tier": 2,
+  "actual_tier": 2,
+  "baseline_tier": 3,
+  "prompt_tokens": 210,
+  "completion_tokens": 96,
+  "total_tokens": 306,
+  "actual_cost": 0.00002,
+  "baseline_cost": 0.00025,
+  "savings_pct": 92.0
+}
+```
+
+This gives you:
+
+- Per‑query **actual cost** (based on the chosen model).
+- A virtual **tier‑3 baseline cost** for comparison.
+- A simple **percentage savings** metric you can aggregate however you like.
+
+---
+
+## 4. Demo script
+
+For a short demo (e.g. a 2–3 minute video) that exercises:
+
+- Tier switching (1 → 2 → 3 → 4),
+- Summarization and history compaction,
+- And context preservation,
+
+you can use `sample_queries.txt` at the repo root. It contains a short list of
+# Kon
+
+[![PyPI](https://img.shields.io/pypi/v/kon-coding-agent)](https://pypi.org/project/kon-coding-agent/)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/downloads/release/python-3120/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+Kon is a minimal coding agent with a tiny harness: about **215 tokens** for the system prompt and around **600 tokens** for tool definitions – so **under 1k tokens** before conversation context.
+
+At the time of writing this README (**25 Feb 2026**), this repo has **112 files** and is easy to understand in a weekend. Here’s a rough file-count comparison against a couple of popular OSS coding agents:
+
+Others are of course more mature, support more models, include broader test coverage, and cover more surfaces. But if you want a truly minimal coding agent with batteries included – something you can understand, fork, and extend quickly – Kon might be interesting.
+
+```bash
+$ fd . | cut -d/ -f1 | sort | uniq -c | sort -rn
+4107 opencode
+ 740 pi-mono
+ 108 kon
+```
+
+[Kon](https://bleach.fandom.com/wiki/Kon) is inspired from Bleach, a artificial soul
+
+## Setup
+
+### Prerequisites
+
+Python 3.12+ and [uv](https://github.com/astral-sh/uv).
+
+### Install (recommended)
+
+```bash
+uv tool install kon-coding-agent
+```
+
+This installs `kon` globally as a CLI tool.
+
+### Install from source (advanced)
+
+```bash
+git clone https://github.com/kuutsav/kon
 cd kon
-pip install -r requirements.txt
-
-# Configure your environment
-cp .env.example .env
-# Fill in your MISTRAL_API_KEY, WANDB_API_KEY, and HF_TOKEN in .env
+uv tool install .
 ```
 
-### 2. Run the Production Dashboard
-Our production setup uses a FastAPI backend and a React/Vite frontend.
+> [!WARNING]
+> Platform support: macOS and Linux are supported; Windows is not tested yet.
 
-**Start the Backend (Port 8000):**
-```bash
-python web/backend/app.py
-```
-
-**Start the Frontend (Port 5173):**
-```bash
-cd web/frontend
-npm i
-npm run dev
-```
-Navigate to `http://localhost:5173` to experience the live routing and ROI dashboard!
-
-### 3. Terminal Agent (Granular Feedback Mode)
-If you prefer the command-line, run the standalone agent loop. This mode features granular tier-correction prompts to generate high-quality RL datasets.
+### Run
 
 ```bash
-python main.py
+kon
 ```
 
+CLI options:
+
+```text
+usage: kon [-h] [--model MODEL]
+           [--provider {github-copilot,openai,openai-codex,openai-responses,zhipu}]
+           [--api-key API_KEY] [--base-url BASE_URL] [--continue]
+           [--resume RESUME_SESSION]
+
+Kon TUI
+
+options:
+  -h, --help            show this help message and exit
+  --model, -m MODEL     Model to use
+  --provider, -p {github-copilot,openai,openai-codex,openai-responses,zhipu}
+                        Provider to use
+  --api-key, -k API_KEY
+                        API key
+  --base-url, -u BASE_URL
+                        Base URL for API
+  --continue, -c        Resume the most recent session
+  --resume, -r RESUME_SESSION
+                        Resume a specific session by ID (full or unique
+                        prefix)
+```
+
+### Tool binaries
+
+- **[fd](https://github.com/sharkdp/fd)** – required for fast file discovery; Kon auto-downloads it only if it's missing.
+- **[ripgrep (rg)](https://github.com/BurntSushi/ripgrep)** – required for fast content search; Kon auto-downloads it only if it's missing.
+- **[eza](https://github.com/eza-community/eza)** (optional) – supports `.gitignore`-aware listings and usually emits fewer tokens than `ls`.
+
+## OAuth and API keys
+
+- **GitHub Copilot OAuth**: run `/login` and choose GitHub Copilot.
+- **OpenAI OAuth (Codex)**: run `/login` and choose OpenAI. Kon supports callback flow plus manual paste fallback.
+- **OpenAI-compatible providers (for example ZhiPu)**: set an API key via environment variable (`OPENAI_API_KEY` or `ZAI_API_KEY`).
+
+## Features
+
+### Tools
+
+| Tool   | Purpose |
+| ------ | ------- |
+| `read` | Read file contents (pagination for large files, image support) |
+| `edit` | Surgical find-and-replace edits |
+| `write` | Create or overwrite files |
+| `bash` | Execute shell commands |
+| `grep` | Search file contents with regex |
+| `find` | Find files by glob pattern |
+
+### Slash commands
+
+Type `/` at the start of input to see available commands.
+
+| Command | Description |
+| ------- | ----------- |
+| `/new` | Start a new conversation and reload project context/skills |
+| `/resume` | Browse and restore a saved session |
+| `/model` | Switch model via interactive picker |
+| `/session` | Show session metadata and token stats |
+| `/compact` | Compact the current conversation immediately |
+| `/export` | Export current session to HTML |
+| `/copy` | Copy last assistant response to clipboard |
+| `/login` | Authenticate with a provider |
+| `/logout` | Log out from a provider |
+| `/clear` | Clear current conversation |
+| `/help` | Show commands and keybindings |
+| `/quit` (`/exit`, `/q`) | Quit Kon |
+
+### `@` file and folder search
+
+Type `@` + query to fuzzy-search files/folders in the current project and insert paths into your prompt.
+
+### Tab path autocomplete
+
+Press **Tab** in the input box to complete paths (`~`, `./`, `../`, absolute paths, quoted paths, etc.).
+
+### Query queueing
+
+If the agent is currently running, you can still submit more prompts. Kon queues them and runs them in order once the current task finishes (up to 5 queued prompts).
+
+### Sessions
+
+Sessions are append-only JSONL files under `~/.kon/sessions/`.
+
+- `/resume` to reopen past sessions
+- `/session` for message/token stats
+- `/export` for standalone HTML transcripts
+- `--continue` / `-c` to continue the most recent session from CLI
+
+### AGENTS.md
+
+Kon loads project guidelines from `AGENTS.md` (or `CLAUDE.md`) files into the system prompt:
+
+1. Global: `~/.kon/AGENTS.md`
+2. Ancestor directories from git root (or home) down to current working directory
+
+### Skills
+
+Skills are reusable instruction packs loaded from:
+
+- Project: `.kon/skills/`
+- Global: `~/.kon/skills/`
+
+Each skill has a `SKILL.md` file with front matter:
+
+```markdown
+---
+name: my-skill
+description: Brief description of what this skill does
 ---
 
-## 🔄 DPO Reinforcement Learning Loop
+# My Skill
 
-The platform gets smarter with every user interaction:
-1.  **Feedback Collection:** The `handler.py` logs user satisfaction (chosen vs. rejected tiers) into local JSONL and syncs heavily with **W&B Tables**.
-2.  **DPO Training:** Run the DPO training script to align the model against user preferences.
-    ```bash
-    python train/train_dpo.py --data-path ./data
-    ```
-3.  **Deployment:** The newly aligned LoRA is pushed to the HuggingFace Hub and dynamically loaded into the Inference Endpoint.
-
----
-
-## 📁 Repository Structure
-
-```
-kon/
-├── config.py                 # Global constants (models, thresholds, limits)
-├── main.py                   # Terminal interactive agent loop
-├── .env.example              # API key template
-│
-├── web/
-│   ├── backend/app.py        # FastAPI server endpoints
-│   └── frontend/             # React/Vite live ROI dashboard
-│
-├── inference/
-│   ├── router.py             # Inference class for the HF classifier endpoint
-│   ├── context_manager.py    # Background context compression agent
-│   ├── cost_calculator.py    # Per-token ROI math engine
-│   └── wandb_logger.py       # Weights & Biases sync
-│
-├── train/
-│   └── train_dpo.py          # RL alignment script (TRL DPOTrainer)
-│
-└── data/
-    └── tier_rubric.py        # Prompt engineering guidelines for SFT data
+Detailed instructions for the agent...
 ```
 
-Built for the **Mistral Hackathon** 🔥
+For skills with scripts, see [Agent Skills Documentation](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
+
+## Not supported
+
+Some features you might expect in other coding agents are not part of Kon's design philosophy:
+
+- **MCP servers** – Use skills instead; they're simpler and give you full control
+- **Sandbox environments** – Kon runs directly on your machine for simplicity; use Docker or VMs if you need isolation
+- **Checkpoint restores** – Not currently supported; may be added in the future
+
+## Architecture
+
+```text
+LLM Provider
+    │
+    │ StreamPart (TextPart, ThinkPart, ToolCallStart, ToolCallDelta, ...)
+    ▼
+Single Turn (turn.py)
+    │
+    │ StreamEvent (ThinkingStart/Delta/End, TextStart/Delta/End, ToolStart/End, ToolResult, ...)
+    ▼
+Agentic Loop (loop.py)
+    │
+    │ Event (AgentStart, TurnStart, TurnEnd, AgentEnd + all StreamEvents)
+    ▼
+UI (app.py)
+```
+
+## Supported Models
+
+Kon works well with local models exposed through an OpenAI-compatible `/v1` API.
+
+### Example using llama-server
+
+To run a local model using llama-server:
+
+```bash
+./llama-server -m <models-dir>/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-Q4_K_M.gguf \
+    -n 8192 \
+    -c 64000
+
+# Then use Kon with:
+kon --model zai-org/glm-4.7-flash \
+    --provider openai \
+    --base-url http://localhost:8080/v1 \
+    --api-key ""
+```
+
+`GLM-4.7-Flash-Q4` ran at 80-90 tps on my i7-14700F × 28, 64GB RAM, 24GB VRAM (RTX 3090)
+
+### All Supported Providers
+
+| Model (local=*) | Provider | Thinking | Vision |
+| ----- | -------- | -------- | ------ |
+| `*zai-org/glm-4.7-flash` | OpenAI Completions | Yes | No |
+| `*qwen/qwen3-coder-next` | OpenAI Completions | Yes | No |
+| `glm-4.7` | ZhiPu (OpenAI Completions) | Yes | No |
+| `glm-5` | ZhiPu (OpenAI Completions) | Yes | No |
+| `claude-sonnet-4.5` | GitHub Copilot | Yes | Yes |
+| `claude-opus-4.5` | GitHub Copilot | Yes | Yes |
+| `claude-sonnet-4.6` | GitHub Copilot | Yes | Yes |
+| `claude-opus-4.6` | GitHub Copilot | Yes | Yes |
+| `gpt-5.3-codex` | GitHub Copilot | Yes | Yes |
+| `gpt-5.3-codex` | OpenAI Codex Responses | Yes | Yes |
+
+
+## Configuration
+
+Config lives at `~/.kon/config.toml` (auto-created on first run).
+
+Most important knobs:
+
+- `llm.default_provider`
+- `llm.default_model`
+- `llm.default_thinking_level`
+- `llm.system_prompt` (**you can fully override Kon’s system prompt here**)
+- `llm.tool_call_idle_timeout_seconds` (fallback timeout for stalled tool-call streaming)
+- `compaction.on_overflow`, `compaction.buffer_tokens`
+- `agent.max_turns`, `agent.default_context_window`
+
+You can also theme the UI via `[ui.colors]` values.
+
+Example:
+
+```toml
+[llm]
+default_provider = "openai-codex"
+default_model = "gpt-5.3-codex"
+default_thinking_level = "high"
+tool_call_idle_timeout_seconds = 60
+system_prompt = """Your custom system prompt here"""
+
+[compaction]
+on_overflow = "continue"
+buffer_tokens = 20000
+```
+
+## Development setup
+
+For hacking on Kon locally:
+
+```bash
+uv sync
+uv run kon
+uv run ruff format .
+uv run pytest
+```
+
+## Acknowledgements
+
+- Kon takes significant inspiration from [`pi-mono` coding-agent](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent), especially in terms of the overall philosophy and UI design.
+  - Why not just use pi? Pi is no longer a small project, and I want to be in complete control of my coding agent.
+  - I mostly agree with Mario (author of pi), but I have different beliefs on some matters - for example, subagents (especially useful for context gathering in larger repos when paired with semantic search tools).
+  - Over time, I also want to give more preference to local LLMs I can run. `glm-4.7-flash` and `qwen-3-coder-next` look promising, so I may make decisions that do not necessarily optimize for SOTA paid models.
+- Kon also borrows ideas from [Amp](https://ampcode.com/), Claude Code, and other coding agents.
+
+## LICENSE
+
+MIT

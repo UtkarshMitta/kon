@@ -1,0 +1,12 @@
+{
+  "agents": {
+    "ministral-3b-latest": "ag_019ca81138967263a7b2b77fc6a4d318",
+    "magistral-small-2509": "ag_019ca8198745737ab46b934a28b9f82c",
+    "mistral-medium-latest": "ag_019ca85258fb726eb0cb5bcc1bcf1fb0",
+    "mistral-large-latest": "ag_019ca85fe72e71fc9d3c5b5b426a8042",
+    "mistral-small-latest": "ag_019ca860673075e2b534fee5fee70961"
+  },
+  "current_model": "mistral-medium-latest",
+  "conversation_id": "conv_019caafb6e9d771cb72aac508a7afb39",
+  "last_update": "2026-03-01T19:58:55.696603+00:00"
+}

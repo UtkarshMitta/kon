@@ -1,15 +1,29 @@
-# Environments
-.env
-
-# Python
+# Python-generated files
 __pycache__/
-*.pyc
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
 
-# Local Test Scripts
-test_hf.py
-clone_model.py
+# Virtual environments
+.venv
 
-# Model Weights
-# (Add specific heavy file extensions here if needed)
-*.safetensors
-*.bin
+# macOS
+.DS_Store
+
+# Exported kon sessions
+kon-session-*
+
+# Local scratch / fixtures
+test_files/
+
+# Router cost logs and other jsonl artifacts
+router_cost_log.jsonl
+*.jsonl
+
+# Local editor settings
+.vscode/
+
+# Environment variables
+.env*
