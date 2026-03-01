@@ -15,6 +15,13 @@ wheels/
 # Exported kon sessions
 kon-session-*
 
+# Local scratch / fixtures
+test_files/
+
+# Router cost logs and other jsonl artifacts
+router_cost_log.jsonl
+*.jsonl
+
 # Local editor settings
 .vscode/
 

@@ -36,6 +36,8 @@ from mistralai import Mistral
 
 HISTORY_FILE = Path(__file__).parent / "conversation_history.jsonl"
 STATE_FILE = Path(__file__).parent / ".router_state.json"
+# Per-query cost log (one JSON object per line).
+COST_FILE = Path(__file__).parent / "router_cost_log.jsonl"
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +84,11 @@ class MistralRouter:
             3: "mistral-medium-latest",  # Complex queries
             4: "mistral-large-latest",  # Expert queries
         }
+        # Invert mapping so we can go from model_id -> tier.
+        self.MODEL_TIER_MAP = {v: k for k, v in self.TIER_MODEL_MAP.items()}
+        # Virtual baseline tier: Mistral Medium (tier 3).
+        self.BASELINE_TIER = 3
+
         env_path = Path(__file__).parent / ".env.local"
         if env_path.exists():
             load_dotenv(dotenv_path=env_path)
@@ -148,6 +155,7 @@ class MistralRouter:
             raise ValueError("payload must contain a non-empty 'prompt' key")
 
         requested_model = payload.get("model")
+        decision_tier: int | None = None
 
         # Check if conversation history is large enough to trigger summary BEFORE the request
         if self._should_summarise():
@@ -160,6 +168,7 @@ class MistralRouter:
         # Dynamic routing logic
         if not requested_model:
             decision = self._classify_query(prompt)
+            decision_tier = decision.get("model_tier")
             target_model = decision.get("model_name", self.DEFAULT_MODEL)
 
             log_msg = (
@@ -187,6 +196,16 @@ class MistralRouter:
             else:
                 print(f"  🔄 Manual Model Switch: {self._current_model} -> {requested_model}")
                 result = self._switch_model(requested_model, prompt)
+
+        # Log per-query cost information based on returned usage.
+        usage = result.get("usage") or {}
+        self._log_cost_record(
+            kind="route",
+            model=result.get("model"),
+            usage=usage,
+            is_summarisation=False,
+            decision_tier=decision_tier,
+        )
 
         return result
 
@@ -362,7 +381,17 @@ class MistralRouter:
                 f"{context}"
             ),
         )
-        summary_text = self._extract_text(response)
+        formatted = self._format_response(response)
+        summary_text = formatted.get("output") or ""
+
+        # Log summarisation cost as its own record.
+        self._log_cost_record(
+            kind="summary",
+            model=self.SUMMARISER_MODEL,
+            usage=formatted.get("usage") or {},
+            is_summarisation=True,
+            decision_tier=None,
+        )
 
         # COMPACT: rewrite the JSONL file with just the summary entry
         summary_entry = {
@@ -374,6 +403,85 @@ class MistralRouter:
             f.write(json.dumps(summary_entry, ensure_ascii=False) + "\n")
 
         print(f"  ✅ JSONL compacted — summary ({len(summary_text or '')} chars)")
+
+    # ------------------------------------------------------------------
+    #  Internal — cost logging
+    # ------------------------------------------------------------------
+
+    def _log_cost_record(
+        self,
+        *,
+        kind: str,
+        model: str | None,
+        usage: dict | None,
+        is_summarisation: bool,
+        decision_tier: int | None,
+    ) -> None:
+        """
+        Append a single JSON object with cost information to COST_FILE.
+
+        We only use token counts reported by the API (`usage`) and never
+        hallucinate them. Baseline cost is computed by treating the same
+        tokens as if they had run on the tier-3 (Mistral Medium) model.
+        """
+        try:
+            usage = usage or {}
+            prompt_tokens = int(usage.get("prompt_tokens") or 0)
+            completion_tokens = int(usage.get("completion_tokens") or 0)
+            total_tokens = int(usage.get("total_tokens") or 0)
+
+            # If the API didn't report usage, don't log anything.
+            if prompt_tokens == 0 and completion_tokens == 0 and total_tokens == 0:
+                return
+
+            # Pricing: USD per 1M tokens (input, output).
+            pricing_by_tier = {
+                1: {"input": 0.10, "output": 0.10},
+                2: {"input": 0.05, "output": 0.08},
+                3: {"input": 0.40, "output": 2.00},
+                4: {"input": 0.50, "output": 1.50},
+            }
+
+            def _cost_for(tier: int | None) -> float | None:
+                if tier is None or tier not in pricing_by_tier:
+                    return None
+                rates = pricing_by_tier[tier]
+                input_cost = (prompt_tokens / 1_000_000) * rates["input"]
+                output_cost = (completion_tokens / 1_000_000) * rates["output"]
+                return input_cost + output_cost
+
+            actual_tier = self.MODEL_TIER_MAP.get(model or "", None)
+            baseline_tier = self.BASELINE_TIER
+
+            actual_cost = _cost_for(actual_tier)
+            baseline_cost = _cost_for(baseline_tier)
+
+            savings_pct = None
+            if actual_cost is not None and baseline_cost is not None and baseline_cost > 0.0:
+                savings_pct = (baseline_cost - actual_cost) / baseline_cost * 100.0
+
+            record = {
+                "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
+                "kind": kind,  # "route" or "summary"
+                "is_summarisation": is_summarisation,
+                "model": model,
+                "decision_tier": decision_tier,
+                "actual_tier": actual_tier,
+                "baseline_tier": baseline_tier,
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": total_tokens,
+                "actual_cost": actual_cost,
+                "baseline_cost": baseline_cost,
+                "savings_pct": savings_pct,
+            }
+
+            COST_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(COST_FILE, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record) + "\n")
+        except Exception:
+            # Cost logging must never break routing; fail silently.
+            return
 
     # ------------------------------------------------------------------
     #  Internal — file I/O
