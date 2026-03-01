@@ -1,0 +1,37 @@
+[
+    {
+        "prompt": "Let's play a logic puzzle game. I will give you a list of suspects, their alibis, and some clues. You just acknowledge the rules, don't try to solve yet.",
+        "model": "mistral-medium-latest",
+        "note": "Query 1: Rule setting"
+    },
+    {
+        "prompt": "Suspects: Alice, Bob, Charlie. The crime happened at 8:00 PM. Alice says she was at the movies. Bob says he was at dinner with Alice. Charlie says he was alone at home.",
+        "model": "mistral-medium-latest",
+        "note": "Query 2: Adding facts"
+    },
+    {
+        "prompt": "Clue 1: The movie theater has security footage proving Alice was indeed there from 7:30 PM to 10:00 PM.",
+        "model": "mistral-medium-latest",
+        "note": "Query 3: Adding Clue 1"
+    },
+    {
+        "prompt": "Given Clue 1, what does that tell us about Bob's alibi?",
+        "model": "mistral-medium-latest",
+        "note": "Query 4: Small deduction based on facts"
+    },
+    {
+        "prompt": "Clue 2: Bob's credit card was charged at a restaurant across town at 8:05 PM.",
+        "model": "mistral-medium-latest",
+        "note": "Query 5: Since this is call 5, it should trigger summarization BEFORE processing this request!"
+    },
+    {
+        "prompt": "Based on EVERYTHING we have discussed so far (the suspects, their original alibis, and both Clue 1 and Clue 2), who is lying and who is the most likely suspect? Explain your reasoning step-by-step.",
+        "model": "codestral-latest",
+        "note": "Query 6: MODEL SWITCH! codestral must use the compacted summary file to answer this correctly."
+    },
+    {
+        "prompt": "Write a Python script that models this exact logic puzzle as a set of boolean constraints or rules, and prints the name of the most likely suspect.",
+        "model": "codestral-latest",
+        "note": "Query 7: Coding task on codestral using context from the puzzle."
+    }
+]
