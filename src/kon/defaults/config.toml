@@ -1,6 +1,6 @@
 [llm]
-default_provider = "openai-codex" # "zhipu", "github-copilot", "openai-codex"
-default_model = "gpt-5.3-codex"
+default_provider = "model-router" # "zhipu", "github-copilot", "openai-codex", "model-router"
+default_model = "ministral-3b-latest"
 default_base_url = ""
 default_thinking_level = "high"
 tool_call_idle_timeout_seconds = 120

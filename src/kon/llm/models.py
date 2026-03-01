@@ -17,6 +17,7 @@ class ApiType(Enum):
     ANTHROPIC_COPILOT = "anthropic-copilot"
     GITHUB_COPILOT = "github-copilot"
     GITHUB_COPILOT_RESPONSES = "github-copilot-responses"
+    MODEL_ROUTER = "model-router"
 
 
 @dataclass
@@ -110,6 +111,15 @@ MODELS: dict[str, Model] = {
         max_tokens=8192 * 2,
         supports_images=True,
         supports_thinking=True,
+    ),
+    "ministral-3b-latest": Model(
+        id="ministral-3b-latest",
+        provider="model-router",
+        api=ApiType.MODEL_ROUTER,
+        base_url="",
+        max_tokens=8192,
+        supports_images=False,
+        supports_thinking=False,
     ),
 }
 

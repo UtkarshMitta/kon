@@ -24,21 +24,13 @@ Usage from another Python file:
     router.reset()
 """
 
+import datetime
 import json
 import os
-import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
 from mistralai import Mistral
-
-
-# ---------------------------------------------------------------------------
-#  Constants
-# ---------------------------------------------------------------------------
-SUMMARISER_MODEL = "magistral-small-2509"
-DEFAULT_MODEL = "mistral-medium-latest"
-SUMMARY_INTERVAL = 5  # compact & summarise every N calls
 
 HISTORY_FILE = Path(__file__).parent / "conversation_history.jsonl"
 
@@ -56,6 +48,10 @@ class MistralRouter:
     restart(payload) — restart from entry  {"from_entry_id": str, "prompt": str}
     reset()          — clear all state
     """
+
+    SUMMARISER_MODEL = "magistral-small-2509"
+    DEFAULT_MODEL = "ministral-3b-latest"
+    SUMMARY_INTERVAL = 5
 
     def __init__(self, api_key: str | None = None):
         env_path = Path(__file__).parent / ".env.local"
@@ -80,8 +76,6 @@ class MistralRouter:
         self._current_model: str | None = None
         self._conversation_id: str | None = None
 
-        self._conversation_id: str | None = None
-
     # ------------------------------------------------------------------
     #  Public methods
     # ------------------------------------------------------------------
@@ -95,12 +89,15 @@ class MistralRouter:
 
         # Check if conversation history is large enough to trigger summary BEFORE the request
         if self._should_summarise():
-            print(f"  📋 Conversation history >= {SUMMARY_INTERVAL} entries. Triggering summary BEFORE request.")
+            print(
+                f"  📋 Conversation history >= {self.SUMMARY_INTERVAL} entries. "
+                "Triggering summary BEFORE request."
+            )
             self._run_periodic_summary()
 
         # First call ever
         if self._current_model is None:
-            model = requested_model or DEFAULT_MODEL
+            model = requested_model or self.DEFAULT_MODEL
             result = self._start_conversation(model, prompt)
         # Same model (or no model specified) → continue
         elif requested_model is None or requested_model == self._current_model:
@@ -122,14 +119,12 @@ class MistralRouter:
             raise ValueError("payload must contain 'from_entry_id' and 'prompt'")
 
         response = self._client.beta.conversations.restart(
-            conversation_id=self._conversation_id,
-            from_entry_id=from_entry_id,
-            inputs=prompt,
+            conversation_id=self._conversation_id, from_entry_id=from_entry_id, inputs=prompt
         )
         self._conversation_id = response.conversation_id
         result = self._format_response(response)
         self._log_to_file("user", prompt)
-        self._log_to_file("assistant", result["output"])
+        self._log_to_file("assistant", result.get("output") or "")
         return result
 
     def reset(self) -> None:
@@ -146,28 +141,27 @@ class MistralRouter:
 
     def _start_conversation(self, model: str, prompt: str) -> dict:
         agent_id = self._get_or_create_agent(model)
-        response = self._client.beta.conversations.start(
-            agent_id=agent_id,
-            inputs=prompt,
-        )
+        response = self._client.beta.conversations.start(agent_id=agent_id, inputs=prompt)
         self._current_model = model
         self._conversation_id = response.conversation_id
 
         result = self._format_response(response)
         self._log_to_file("user", prompt)
-        self._log_to_file("assistant", result["output"])
+        self._log_to_file("assistant", result.get("output") or "")
         return result
 
     def _continue_conversation(self, prompt: str) -> dict:
+        if not self._conversation_id:
+            raise RuntimeError("Cannot continue conversation: no active conversation ID")
+            
         response = self._client.beta.conversations.append(
-            conversation_id=self._conversation_id,
-            inputs=prompt,
+            conversation_id=self._conversation_id, inputs=prompt
         )
         self._conversation_id = response.conversation_id
 
         result = self._format_response(response)
         self._log_to_file("user", prompt)
-        self._log_to_file("assistant", result["output"])
+        self._log_to_file("assistant", result.get("output") or "")
         return result
 
     def _switch_model(self, new_model: str, prompt: str) -> dict:
@@ -196,11 +190,11 @@ class MistralRouter:
         """Check if the JSONL file has SUMMARY_INTERVAL or more entries."""
         if not HISTORY_FILE.exists():
             return False
-            
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+
+        with open(HISTORY_FILE, encoding="utf-8") as f:
             lines = [line for line in f if line.strip()]
-        
-        return len(lines) >= SUMMARY_INTERVAL
+
+        return len(lines) >= self.SUMMARY_INTERVAL
 
     def _run_periodic_summary(self) -> None:
         """
@@ -211,7 +205,7 @@ class MistralRouter:
         if not context:
             return
 
-        summariser_id = self._get_or_create_agent(SUMMARISER_MODEL)
+        summariser_id = self._get_or_create_agent(self.SUMMARISER_MODEL)
         response = self._client.beta.conversations.start(
             agent_id=summariser_id,
             inputs=(
@@ -227,12 +221,14 @@ class MistralRouter:
         summary_entry = {
             "role": "summary",
             "content": summary_text,
-            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
         }
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
             f.write(json.dumps(summary_entry, ensure_ascii=False) + "\n")
 
-        print(f"  ✅ JSONL compacted — replaced all entries with summary ({len(summary_text)} chars)")
+        print(
+            f"  ✅ JSONL compacted — replaced all entries with summary ({len(summary_text)} chars)"
+        )
 
     # ------------------------------------------------------------------
     #  Internal — file I/O
@@ -245,7 +241,7 @@ class MistralRouter:
             "content": content,
             "model": self._current_model,
             "conversation_id": self._conversation_id,
-            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
         }
         with open(HISTORY_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
@@ -260,7 +256,7 @@ class MistralRouter:
             return ""
 
         parts = []
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+        with open(HISTORY_FILE, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
@@ -285,7 +281,7 @@ class MistralRouter:
             return
 
         lines = []
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+        with open(HISTORY_FILE, encoding="utf-8") as f:
             lines = f.readlines()
 
         # Find the last user entry (second-to-last line, since assistant follows)
@@ -308,9 +304,7 @@ class MistralRouter:
             return self._agents[model]
 
         agent = self._client.beta.agents.create(
-            model=model,
-            description=f"Adaptive router agent for {model}",
-            name=f"router-{model}",
+            model=model, description=f"Adaptive router agent for {model}", name=f"router-{model}"
         )
         self._agents[model] = agent.id
         return agent.id
@@ -352,12 +346,11 @@ class MistralRouter:
                 c_tok = getattr(u, "completion_tokens", 0)
                 t_tok = getattr(u, "total_tokens", 0)
 
-            usage = {
-                "prompt_tokens": p_tok,
-                "completion_tokens": c_tok,
-                "total_tokens": t_tok,
-            }
-            print(f"  [Debug] Tokens extracted from API response: prompt={p_tok}, completion={c_tok}, total={t_tok}")
+            usage = {"prompt_tokens": p_tok, "completion_tokens": c_tok, "total_tokens": t_tok}
+            print(
+                f"  [Debug] Tokens extracted from API response: "
+                f"prompt={p_tok}, completion={c_tok}, total={t_tok}"
+            )
 
         return {
             "conversation_id": response.conversation_id,

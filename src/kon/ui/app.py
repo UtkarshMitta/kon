@@ -192,9 +192,13 @@ class Kon(CommandsMixin, SessionUIMixin, App[None]):
 
     @on(events.TextSelected)
     def _on_text_selected(self) -> None:
-        selection = self.screen.get_selected_text()
-        if selection:
-            self.copy_to_clipboard(selection)
+        try:
+            selection = self.screen.get_selected_text()
+            if selection:
+                self.copy_to_clipboard(selection)
+        except IndexError:
+            # Selection became invalid (e.g., content updated during selection)
+            pass
 
     def on_mount(self) -> None:
         if config.binaries.fd:

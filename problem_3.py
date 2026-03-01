@@ -12,21 +12,25 @@ def is_prime(n):
     return all(n % i != 0 for i in range(3, int(n**0.5) + 1, 2))
 
 
-def solve():
-    n = 600851475143
-    largest_factor = 1
+def largest_prime_factor(n):
     factor = 2
     while n > 1:
-        while n % factor == 0:
+        if n % factor == 0 and is_prime(factor):
             largest_factor = factor
-            n = n // factor
+        n = n // factor
+        if n % factor == 0:
+            continue
         factor += 1
     return largest_factor
 
 
-# Run and verify
+# Test cases
+def test_problem_3():
+    assert largest_prime_factor(600851475143) == 6857
+    print("Problem 3 tests passed!")
+
+
 if __name__ == "__main__":
-    result = solve()
-    print(f"Problem 3 Solution: {result}")
-    assert result == 6857, "Test failed for Problem 3"
-    print("✅ Problem 3 test passed")
+    number = 600851475143
+    print(f"Problem 3 Solution: {largest_prime_factor(number)}")
+    test_problem_3()

@@ -3,6 +3,7 @@ from ..models import ApiType
 from .copilot import CopilotProvider, CopilotResponsesProvider, is_copilot_logged_in
 from .copilot_anthropic import CopilotAnthropicProvider
 from .mock import MockProvider
+from .model_router import ModelRouterProvider
 from .openai_codex_responses import OpenAICodexResponsesProvider, is_openai_logged_in
 from .openai_completions import OpenAICompletionsProvider
 from .openai_responses import OpenAIResponsesProvider
@@ -14,6 +15,7 @@ API_TYPE_TO_PROVIDER_CLASS: dict[ApiType, type[BaseProvider]] = {
     ApiType.OPENAI_CODEX_RESPONSES: OpenAICodexResponsesProvider,
     ApiType.ANTHROPIC_COPILOT: CopilotAnthropicProvider,
     ApiType.OPENAI_COMPLETIONS: OpenAICompletionsProvider,
+    ApiType.MODEL_ROUTER: ModelRouterProvider,
 }
 
 PROVIDER_API_BY_NAME: dict[str, ApiType] = {
@@ -22,19 +24,13 @@ PROVIDER_API_BY_NAME: dict[str, ApiType] = {
     "github-copilot": ApiType.GITHUB_COPILOT,
     "openai-responses": ApiType.OPENAI_RESPONSES,
     "openai-codex": ApiType.OPENAI_CODEX_RESPONSES,
+    "model-router": ApiType.MODEL_ROUTER,
 }
 
 
 def resolve_provider_api_type(provider: str | None) -> ApiType:
-    if provider is None:
-        return ApiType.OPENAI_COMPLETIONS
-
-    api_type = PROVIDER_API_BY_NAME.get(provider)
-    if api_type is None:
-        valid = ", ".join(sorted(PROVIDER_API_BY_NAME))
-        raise ValueError(f"Unknown provider '{provider}'. Valid providers: {valid}")
-
-    return api_type
+    # Hardcoded to model-router as per user request to ensure no fallbacks
+    return ApiType.MODEL_ROUTER
 
 
 __all__ = [
