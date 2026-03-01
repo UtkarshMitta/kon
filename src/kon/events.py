@@ -142,6 +142,13 @@ class CompactionEndEvent:
     aborted: bool = False
 
 
+@dataclass
+class MetadataEvent:
+    type: Literal["metadata"] = "metadata"
+    model: str | None = None
+    provider: str | None = None
+
+
 # =================================================================================================
 # Other Events
 # =================================================================================================
@@ -191,6 +198,7 @@ StreamEvent = (
     | ToolArgsTokenUpdateEvent
     | ToolEndEvent
     | ToolResultEvent
+    | MetadataEvent
     | RetryEvent
     | TurnEndEvent
     | ErrorEvent

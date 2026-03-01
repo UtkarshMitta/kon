@@ -17,3 +17,6 @@ kon-session-*
 
 # Local editor settings
 .vscode/
+
+# Environment variables
+.env*

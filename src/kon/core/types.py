@@ -71,7 +71,15 @@ class StreamError(BaseModel):
     error: str
 
 
-StreamPart = TextPart | ThinkPart | ToolCallStart | ToolCallDelta | StreamDone | StreamError
+class MetadataPart(BaseModel):
+    type: Literal["metadata"] = "metadata"
+    model: str | None = None
+    provider: str | None = None
+
+
+StreamPart = (
+    TextPart | ThinkPart | ToolCallStart | ToolCallDelta | MetadataPart | StreamDone | StreamError
+)
 
 
 # =================================================================================================

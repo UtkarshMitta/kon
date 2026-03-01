@@ -26,6 +26,7 @@ from ..events import (
     CompactionStartEvent,
     ErrorEvent,
     InterruptedEvent,
+    MetadataEvent,
     RetryEvent,
     TextDeltaEvent,
     TextEndEvent,
@@ -727,6 +728,13 @@ class Kon(CommandsMixin, SessionUIMixin, App[None]):
 
                         case WarningEvent(warning=w):
                             chat.add_info_message(str(w), warning=True)
+
+                        case MetadataEvent(model=m, provider=p):
+                            if m:
+                                self._model = m
+                            if p:
+                                self._model_provider = p
+                            info_bar.set_model(self._model, self._model_provider)
 
                         case AgentEndEvent(stop_reason=reason):
                             if reason == StopReason.INTERRUPTED:

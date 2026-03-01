@@ -34,6 +34,7 @@ from .core.types import (
     AssistantMessage,
     ImageContent,
     Message,
+    MetadataPart,
     StopReason,
     StreamDone,
     StreamError,
@@ -50,6 +51,7 @@ from .core.types import (
 from .events import (
     ErrorEvent,
     InterruptedEvent,
+    MetadataEvent,
     RetryEvent,
     StreamEvent,
     TextDeltaEvent,
@@ -419,6 +421,9 @@ async def run_single_turn(
                             tool_name=current_tool_call["name"],
                             token_count=_tool_arg_token_count,
                         )
+
+            case MetadataPart(model=m, provider=p):
+                yield MetadataEvent(model=m, provider=p)
 
             case StreamDone(stop_reason=reason):
                 stop_reason = reason

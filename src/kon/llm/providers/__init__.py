@@ -29,8 +29,16 @@ PROVIDER_API_BY_NAME: dict[str, ApiType] = {
 
 
 def resolve_provider_api_type(provider: str | None) -> ApiType:
-    # Hardcoded to model-router as per user request to ensure no fallbacks
-    return ApiType.MODEL_ROUTER
+    if provider is None:
+        # Default to model-router for the app, but keep it flexible
+        return ApiType.MODEL_ROUTER
+
+    if provider in PROVIDER_API_BY_NAME:
+        return PROVIDER_API_BY_NAME[provider]
+
+    raise ValueError(
+        f"Unknown provider '{provider}'. Valid providers: {', '.join(PROVIDER_API_BY_NAME.keys())}"
+    )
 
 
 __all__ = [

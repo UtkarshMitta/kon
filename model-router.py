@@ -27,12 +27,15 @@ Usage from another Python file:
 import datetime
 import json
 import os
+import re
 from pathlib import Path
 
+import requests
 from dotenv import load_dotenv
 from mistralai import Mistral
 
 HISTORY_FILE = Path(__file__).parent / "conversation_history.jsonl"
+STATE_FILE = Path(__file__).parent / ".router_state.json"
 
 
 # ---------------------------------------------------------------------------
@@ -53,7 +56,32 @@ class MistralRouter:
     DEFAULT_MODEL = "ministral-3b-latest"
     SUMMARY_INTERVAL = 5
 
+    BASE_ROUTER_MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
+
+    ROUTER_SYSTEM_PROMPT = (
+        "You are a query complexity router for Mistral AI models. "
+        "Given a user query, classify it into the appropriate model tier and provide "
+        "a confidence score. If the user query requires tools (like 'bash' or 'write'), "
+        "always output them in the exact <tool_call> format requested.\n\n"
+        "Output ONLY valid JSON for the classification in this exact format:\n"
+        '{"model_tier": <1|2|3|4>, "confidence": <0.0-1.0>}\n\n'
+        "Tier definitions:\n"
+        "- Tier 1 (small): Simple factual lookups, greetings, trivial math, yes/no questions\n"
+        "- Tier 2 (medium): Summarization, translation, moderate reasoning, simple coding\n"
+        "- Tier 3 (large): Complex analysis, multi-step reasoning, debugging, comparisons\n"
+        "- Tier 4 (xlarge): Expert-level research, novel problem-solving, proofs, system design"
+    )
+
     def __init__(self, api_key: str | None = None):
+        # agent cache:  model_name -> agent_id
+        self._agents: dict[str, str] = {}
+
+        self.TIER_MODEL_MAP = {
+            1: "ministral-3b-latest",  # Simple queries
+            2: "mistral-small-latest",  # Moderate queries
+            3: "mistral-medium-latest",  # Complex queries
+            4: "mistral-large-latest",  # Expert queries
+        }
         env_path = Path(__file__).parent / ".env.local"
         if env_path.exists():
             load_dotenv(dotenv_path=env_path)
@@ -69,12 +97,46 @@ class MistralRouter:
 
         self._client = Mistral(api_key=self._api_key)
 
-        # agent cache:  model_name -> agent_id
-        self._agents: dict[str, str] = {}
+        # HF Router config
+        self._hf_endpoint = os.environ.get("HF_ENDPOINT_URL")
+        self._hf_token = os.environ.get("HF_TOKEN")
+
+        # Log endpoint for debugging
+        if os.environ.get("KON_DEBUG"):
+            with open("/tmp/mistral_router_debug.log", "a") as f:
+                f.write(f"\n[DEBUG] Loaded HF_ENDPOINT_URL: {self._hf_endpoint}\n")
 
         # conversation state
         self._current_model: str | None = None
         self._conversation_id: str | None = None
+
+        # Load persisted state if exists
+        self._load_state()
+
+    def _load_state(self) -> None:
+        """Load internal state from disk."""
+        if STATE_FILE.exists():
+            try:
+                data = json.loads(STATE_FILE.read_text())
+                self._agents = data.get("agents", {})
+                self._current_model = data.get("current_model")
+                self._conversation_id = data.get("conversation_id")
+                print(f"  📂 Loaded persistent state from {STATE_FILE.name}")
+            except Exception as e:
+                print(f"  ⚠️ Error loading state: {e}")
+
+    def _save_state(self) -> None:
+        """Persist internal state to disk."""
+        try:
+            data = {
+                "agents": self._agents,
+                "current_model": self._current_model,
+                "conversation_id": self._conversation_id,
+                "last_update": datetime.datetime.now(datetime.UTC).isoformat(),
+            }
+            STATE_FILE.write_text(json.dumps(data, indent=2))
+        except Exception as e:
+            print(f"  ⚠️ Error saving state: {e}")
 
     # ------------------------------------------------------------------
     #  Public methods
@@ -95,16 +157,36 @@ class MistralRouter:
             )
             self._run_periodic_summary()
 
-        # First call ever
-        if self._current_model is None:
-            model = requested_model or self.DEFAULT_MODEL
-            result = self._start_conversation(model, prompt)
-        # Same model (or no model specified) → continue
-        elif requested_model is None or requested_model == self._current_model:
-            result = self._continue_conversation(prompt)
-        # Different model → switch
+        # Dynamic routing logic
+        if not requested_model:
+            decision = self._classify_query(prompt)
+            target_model = decision.get("model_name", self.DEFAULT_MODEL)
+
+            log_msg = (
+                f"[{datetime.datetime.now()}] 🤖 HF Router Decision: "
+                f"Tier {decision.get('model_tier')} ({decision.get('confidence')} confidence) "
+                f"-> {target_model}\n"
+            )
+            print(log_msg.strip())
+            with open("/tmp/mistral_router_debug.log", "a") as f:
+                f.write(log_msg)
+
+            if self._current_model is None:
+                result = self._start_conversation(target_model, prompt)
+            elif target_model == self._current_model:
+                result = self._continue_conversation(prompt)
+            else:
+                print(f"  🔄 Model Switch DETECTED: {self._current_model} -> {target_model}")
+                result = self._switch_model(target_model, prompt)
         else:
-            result = self._switch_model(requested_model, prompt)
+            # Explicit model request (e.g. via --model flag or config)
+            if self._current_model is None:
+                result = self._start_conversation(requested_model, prompt)
+            elif requested_model == self._current_model:
+                result = self._continue_conversation(prompt)
+            else:
+                print(f"  🔄 Manual Model Switch: {self._current_model} -> {requested_model}")
+                result = self._switch_model(requested_model, prompt)
 
         return result
 
@@ -131,9 +213,74 @@ class MistralRouter:
         """Clear all state."""
         self._current_model = None
         self._conversation_id = None
+        # Wipe state file
+        if STATE_FILE.exists():
+            STATE_FILE.unlink()
         # Wipe the history file
         if HISTORY_FILE.exists():
             HISTORY_FILE.write_text("")
+
+    def _classify_query(self, query: str) -> dict:
+        """Predicts the optimal tier for a query using the Dedicated HF Endpoint."""
+        if not self._hf_endpoint or not self._hf_token:
+            raise RuntimeError(
+                "Hugging Face Router credentials missing (HF_ENDPOINT_URL or HF_TOKEN). "
+                "Routing cannot continue without these."
+            )
+
+        headers = {"Authorization": f"Bearer {self._hf_token}", "Content-Type": "application/json"}
+
+        # We MUST use the Mistral Chat Template format (<s>[INST] ... [/INST])
+        templated_prompt = (
+            f"<s>[INST] {self.ROUTER_SYSTEM_PROMPT}\n\nUser Query: {query}\n\n"
+            "Remember: Output ONLY the JSON object. "
+            'Example: {"model_tier": 2, "confidence": 0.8} [/INST]'
+        )
+
+        payload = {
+            "inputs": templated_prompt,
+            "parameters": {"max_new_tokens": 128, "temperature": 0.01, "do_sample": False},
+        }
+
+        try:
+            endpoint = self._hf_endpoint.rstrip("/")
+            res = requests.post(endpoint, headers=headers, json=payload, timeout=20)
+            res.raise_for_status()
+            res_json = res.json()
+
+            # Custom handlers return a list of dictionaries: [{"generated_text": "..."}]
+            if isinstance(res_json, list) and len(res_json) > 0:
+                raw_content = res_json[0].get("generated_text", "")
+
+                with open("/tmp/mistral_router_debug.log", "a") as f:
+                    f.write(
+                        f"[{datetime.datetime.now()}] 📥 Raw HF Response Content: {raw_content}\n"
+                    )
+
+                result = self._parse_json(raw_content)
+
+                # Map back to model name
+                tier = result.get("model_tier", 1)
+                result["model_name"] = self.TIER_MODEL_MAP.get(tier, self.DEFAULT_MODEL)
+                return result
+            else:
+                raise ValueError(f"Unexpected API response: {res_json}")
+
+        except Exception as e:
+            print(f"  ❌ HF Router Critical Error: {e}")
+            raise RuntimeError(f"Hugging Face Router failed: {e}") from e
+
+    def _parse_json(self, text: str) -> dict:
+        """Robustly extract JSON from model output."""
+        try:
+            match = re.search(r"\{.*\}", text, re.DOTALL)
+            if match:
+                return json.loads(match.group(0))
+            return json.loads(text)
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to extract or parse JSON from router output: {text}. Error: {e}"
+            ) from e
 
     # ------------------------------------------------------------------
     #  Internal — conversation lifecycle
@@ -153,7 +300,7 @@ class MistralRouter:
     def _continue_conversation(self, prompt: str) -> dict:
         if not self._conversation_id:
             raise RuntimeError("Cannot continue conversation: no active conversation ID")
-            
+
         response = self._client.beta.conversations.append(
             conversation_id=self._conversation_id, inputs=prompt
         )
@@ -226,9 +373,7 @@ class MistralRouter:
         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
             f.write(json.dumps(summary_entry, ensure_ascii=False) + "\n")
 
-        print(
-            f"  ✅ JSONL compacted — replaced all entries with summary ({len(summary_text)} chars)"
-        )
+        print(f"  ✅ JSONL compacted — summary ({len(summary_text or '')} chars)")
 
     # ------------------------------------------------------------------
     #  Internal — file I/O
@@ -245,6 +390,7 @@ class MistralRouter:
         }
         with open(HISTORY_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        self._save_state()
 
     def _read_context_from_file(self) -> str:
         """
@@ -307,6 +453,7 @@ class MistralRouter:
             model=model, description=f"Adaptive router agent for {model}", name=f"router-{model}"
         )
         self._agents[model] = agent.id
+        self._save_state()
         return agent.id
 
     # ------------------------------------------------------------------
