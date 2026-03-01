@@ -139,7 +139,7 @@ A fine-tuned **Ministral 3B** model that classifies user queries into optimal Mi
 
 | Tier | Label | Target Model | Use Case |
 |------|-------|-------------|----------|
-| 1 | small | Ministral 3B/8B | Simple facts, greetings, trivial math |
+| 1 | small | Ministral 3B | Simple facts, greetings, trivial math |
 | 2 | medium | Mistral Small 3.2 | Summarization, translation, moderate reasoning |
 | 3 | large | Mistral Medium 3.1 | Complex analysis, multi-step reasoning, coding |
 | 4 | xlarge | Mistral Large 3 | Expert research, proofs, system design |
