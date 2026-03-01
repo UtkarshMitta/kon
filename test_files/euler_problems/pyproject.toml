@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+addopts = "--tb=short"
+python_files = "test_*.py"
+pytest_path = "tests"
