@@ -1,6 +1,6 @@
 """
 Inference wrapper for the Mistral Query Router.
-Loads the fine-tuned Ministral 3B + LoRA adapter and routes queries to model tiers.
+Loads the fine-tuned Mistral 7B + LoRA adapter and routes queries to model tiers.
 """
 
 import json
